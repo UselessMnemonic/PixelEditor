@@ -18,7 +18,7 @@ public class EditorPanel extends JPanel {
 	private Color currentColor;
 	private boolean mShowGrid;
 	private boolean mFill;
-	private final int gridSize = 5;
+	private int gridSize = 5;
 	private final int imageSide = 300;
 	
 	public EditorPanel()
@@ -208,6 +208,11 @@ public class EditorPanel extends JPanel {
 				g.fillRect(x, y, gridSize, gridSize);
 			}
 		}
+		repaint();
+	}
+
+	public void changeGridSize(int intValue) {
+		gridSize = intValue;
 		repaint();
 	}
 }

@@ -33,6 +33,10 @@ import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
 import javax.swing.ImageIcon;
 import java.awt.event.MouseMotionAdapter;
+import javax.swing.JList;
+import javax.swing.JSeparator;
+import javax.swing.JComboBox;
+import javax.swing.DefaultComboBoxModel;
 
 public class PixelEditorWindow {
 	
@@ -312,6 +316,12 @@ public class PixelEditorWindow {
 		mSecondColorDisplay.setBounds(368, 122, 45, 20);
 		mPixelEditorFrame.getContentPane().add(mSecondColorDisplay);
 		
+		JComboBox<Integer> comboBox = new JComboBox<Integer>();
+		comboBox.setModel(new DefaultComboBoxModel<Integer>(new Integer[] {5, 10, 15, 20, 30, 50, 60}));
+		comboBox.setToolTipText("Grid Size");
+		comboBox.setBounds(625, 244, 55, 20);
+		mPixelEditorFrame.getContentPane().add(comboBox);
+		
 		//STOP
 		//hammer time
 		//These lines give listeners to the value selectors
@@ -522,6 +532,13 @@ public class PixelEditorWindow {
 			}
 		});
 		
+		//makes the grid size change
+		comboBox.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				mEditorPanel.changeGridSize( ((Integer)e.getItem()).intValue() );
+			}
+		});
+		
 		//ok, with the mess out of the way, we now select the first box...
 		setColorSelection(0);
 		//...and give it that color...
@@ -534,6 +551,10 @@ public class PixelEditorWindow {
 		setColorSelection(0);
 		//...and give it the border
 		mFirstColorDisplay.setBorder(selectedBorder);
+		
+		JLabel lblGridSize = new JLabel("Grid Size");
+		lblGridSize.setBounds(575, 247, 46, 14);
+		mPixelEditorFrame.getContentPane().add(lblGridSize);
 	}
 	
 	//this function is called to update the color selection when a color box is selected
