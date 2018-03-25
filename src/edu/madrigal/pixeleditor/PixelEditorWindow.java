@@ -1,3 +1,4 @@
+package edu.madrigal.pixeleditor;
 import java.awt.EventQueue;
 import java.awt.Robot;
 import java.awt.Toolkit;
@@ -34,8 +35,6 @@ import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
 import javax.swing.ImageIcon;
 import java.awt.event.MouseMotionAdapter;
-import javax.swing.JList;
-import javax.swing.JSeparator;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 
