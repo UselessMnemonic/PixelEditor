@@ -116,7 +116,7 @@ public class EditorPanel extends JPanel {
 	private void floodFillRecursive(int x, int y, Graphics tg, Color target)
 	{
 
-		if(target.equals(tg.getColor()))
+		if( target.equals(tg.getColor()) && (target.getAlpha() == tg.getColor().getAlpha()) )
 			return;
 		
 		if(x < 0 || x > imageSide-1)
@@ -129,10 +129,10 @@ public class EditorPanel extends JPanel {
 		
 		tg.fillRect(x, y, gridSize, gridSize);
 		
-		floodFillRecursive(x-gridSize, y, tg, target);
-		floodFillRecursive(x+gridSize, y, tg, target);
-		floodFillRecursive(x, y-gridSize, tg, target);
-		floodFillRecursive(x, y+gridSize, tg, target);
+		try{floodFillRecursive(x-gridSize, y, tg, target);}catch(Exception e){}
+		try{floodFillRecursive(x+gridSize, y, tg, target);}catch(Exception e){}
+		try{floodFillRecursive(x, y-gridSize, tg, target);}catch(Exception e){}
+		try{floodFillRecursive(x, y+gridSize, tg, target);}catch(Exception e){}
 	}
 
 	//clears the canvas to all white
@@ -191,5 +191,23 @@ public class EditorPanel extends JPanel {
 	public void setFill(boolean selected)
 	{
 		mFill = selected;
+	}
+
+	public void invertColors() {
+		Color currentColor;
+		Color invertedColor;
+		Graphics g = image.createGraphics();
+		
+		for(int x = 0; x < imageSide; x+=gridSize)
+		{
+			for(int y = 0; y < imageSide; y+=gridSize)
+			{
+				currentColor = new Color(image.getRGB(x, y));
+				invertedColor = new Color(currentColor.getRGB() ^ 0x00ffffff);
+				g.setColor(invertedColor);
+				g.fillRect(x, y, gridSize, gridSize);
+			}
+		}
+		repaint();
 	}
 }

@@ -1,8 +1,12 @@
 import java.awt.EventQueue;
+import java.awt.Robot;
+
 import javax.swing.JFrame;
 
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
+
+import java.awt.AWTException;
 import java.awt.Color;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -10,6 +14,8 @@ import javax.swing.JTextField;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import java.awt.event.MouseAdapter;
@@ -25,6 +31,8 @@ import java.awt.event.KeyEvent;
 import javax.swing.JCheckBox;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
+import javax.swing.ImageIcon;
+import java.awt.event.MouseMotionAdapter;
 
 public class PixelEditorWindow {
 	
@@ -107,6 +115,14 @@ public class PixelEditorWindow {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
+		//make sure that the window system matches the OS
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+				| UnsupportedLookAndFeelException e1) {
+			//ignore errors here.
+			e1.printStackTrace();
+		}
 		
 		//a border to be given to the selected color boxes
 		LineBorder selectedBorder = new LineBorder(new Color(255, 255, 0), 2, false);
@@ -257,12 +273,12 @@ public class PixelEditorWindow {
 		
 		JButton mClearButton = new JButton("Clear");
 		mClearButton.setToolTipText("Clear the canvas");
-		mClearButton.setBounds(320, 176, 93, 23);
+		mClearButton.setBounds(320, 219, 93, 23);
 		mPixelEditorFrame.getContentPane().add(mClearButton);
 		
 		JButton mInvertButton = new JButton("Invert");
 		mInvertButton.setToolTipText("Invert the canvas colors");
-		mInvertButton.setBounds(320, 210, 93, 23);
+		mInvertButton.setBounds(320, 253, 93, 23);
 		mPixelEditorFrame.getContentPane().add(mInvertButton);
 		
 		JButton mSaveButton = new JButton("Save...");
@@ -278,12 +294,17 @@ public class PixelEditorWindow {
 		
 		JCheckBox chckbxGrid = new JCheckBox("Grid");
 		chckbxGrid.setSelected(true);
-		chckbxGrid.setBounds(316, 149, 45, 23);
+		chckbxGrid.setBounds(320, 149, 45, 23);
 		mPixelEditorFrame.getContentPane().add(chckbxGrid);
 		
 		JCheckBox chckbxFill = new JCheckBox("Fill");
-		chckbxFill.setBounds(363, 149, 50, 23);
+		chckbxFill.setBounds(320, 178, 37, 23);
 		mPixelEditorFrame.getContentPane().add(chckbxFill);
+		
+		JButton mEyedropperButton = new JButton("");
+		mEyedropperButton.setIcon(new ImageIcon("C:\\Users\\chris\\eclipse-workspace\\PixelEditor\\eyedropper.png"));
+		mEyedropperButton.setBounds(391, 156, 24, 22);
+		mPixelEditorFrame.getContentPane().add(mEyedropperButton);
 		
 		mSecondColorDisplay = new JPanel();
 		mSecondColorDisplay.setToolTipText("Secondary Color");
@@ -463,6 +484,44 @@ public class PixelEditorWindow {
 			}
 		});
 		
+		//tells the canvas to invert the colors in the image
+		mInvertButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				mEditorPanel.invertColors();
+			}
+		});
+		
+		//sets the current color to the color clicked on, same for both actions
+		mEyedropperButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				try {
+					//a really nice class that lets us look at the entire screen
+					Robot getter = new Robot();
+					//use getXOnScreen to get absolute position where the mouse is, so we can grab the color anywhere
+					Color selectedColor = getter.getPixelColor(e.getXOnScreen(), e.getYOnScreen());
+					//same update stuff
+					updateColorRGBA(selectedColor.getRed(), selectedColor.getGreen(), selectedColor.getBlue(), selectedColor.getAlpha());
+				} catch (AWTException e1) {
+					//ignore any error here
+					e1.printStackTrace();
+				}
+			}
+		});
+		mEyedropperButton.addMouseMotionListener(new MouseMotionAdapter() {
+			@Override
+			public void mouseDragged(MouseEvent e) {
+				try {
+					Robot getter = new Robot();
+					Color selectedColor = getter.getPixelColor(e.getXOnScreen(), e.getYOnScreen());
+					updateColorRGBA(selectedColor.getRed(), selectedColor.getGreen(), selectedColor.getBlue(), selectedColor.getAlpha());
+				} catch (AWTException e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
+		
 		//ok, with the mess out of the way, we now select the first box...
 		setColorSelection(0);
 		//...and give it that color...
@@ -572,7 +631,7 @@ public class PixelEditorWindow {
 		
 		//set the color display boxes to the colors in the RGBA matrix
 		mFirstColorDisplay.setBackground(new Color(mRGBAValues[0][0], mRGBAValues[0][1], mRGBAValues[0][2], mRGBAValues[0][3]));
-		mSecondColorDisplay.setBackground(new Color(mRGBAValues[1][0], mRGBAValues[1][1], mRGBAValues[1][2], mRGBAValues[0][3]));
+		mSecondColorDisplay.setBackground(new Color(mRGBAValues[1][0], mRGBAValues[1][1], mRGBAValues[1][2], mRGBAValues[1][3]));
 		
 		//set the HEX code to the currently selected value, using the funny string which tells
 		//the String class to save the RGB (and not A) values to hex values
