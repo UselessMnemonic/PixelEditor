@@ -4,6 +4,7 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.JPanel;
 
+@SuppressWarnings("serial")
 public class ColorPickerPanel extends JPanel {
 
 	private float[] mHSBCoordinates;

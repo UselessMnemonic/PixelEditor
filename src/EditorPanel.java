@@ -10,6 +10,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
+@SuppressWarnings("serial")
 public class EditorPanel extends JPanel {
 
 	private BufferedImage image;
@@ -121,7 +122,6 @@ public class EditorPanel extends JPanel {
 		g.drawImage(image, 0, 0, this);
 		
 		g.setColor(new Color(50, 50, 150, 30));
-		int x1, y1;
 		
 		if(mShowGrid)
 		{
