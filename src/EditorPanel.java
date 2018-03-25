@@ -13,11 +13,12 @@ import javax.swing.JPanel;
 @SuppressWarnings("serial")
 public class EditorPanel extends JPanel {
 
+	//the buffered image we want, the color of the brush, the showGrid and modeFill, grid size, and image size
 	private BufferedImage image;
 	private Color currentColor;
 	private boolean mShowGrid;
 	private boolean mFill;
-	private final int pixelSize = 5;
+	private final int gridSize = 5;
 	private final int imageSide = 300;
 	
 	public EditorPanel()
@@ -40,59 +41,101 @@ public class EditorPanel extends JPanel {
 		});
 	}
 	
+	//sets the brush color
 	public void setColor(Color c)
 	{
 		currentColor = c;
 	}
 	
+	//when the mouse is clicked, draws based on the mode
 	protected void drawOnCanvas(MouseEvent e) {
+		
+		//make a graphics object for the buffered image
 		Graphics tg = image.createGraphics();
+		
+		//set its color to the current color
 		tg.setColor(currentColor);
 		
+		//since we're coloring pixels larger than the actual pixels,
+		//we have to calculate the top-left most corner of each region (a fix for the several jpanels)
+		
+		//lets first call xi and yi the actual coordinates
 		int xi = e.getX();
 		int yi = e.getY();
 		
-		//we need to find the "pixel" the mouse is in. One way to do this is to perform coordinate mod pixel size, which will tell us how many pixels we are from an edge
-		int dx = xi%pixelSize;
-		int dy = yi%pixelSize;
+		//perform (coordinate mod gridSize), which is the distance from the leftmost edge (dx) and topmost edge (dy)
+		int dx = xi % gridSize;
+		int dy = yi % gridSize;
 		
-		//we can then subtract from the coordinate we are in, giving us the top left corner of the "pixel" we are in
+		//now we take the differences, and we get the coordinate of the top-left most corner!
 		int xf = xi - dx;
 		int yf = yi - dy;
 
+		//if we're in fill mode, do a fill, otherwise draw a pixel
 		if(mFill)
 			doFill(xf, yf, tg);
 		else
 			doDot(xf, yf, tg);
+		
+		//always repaint the image afterwards
 		repaint();
 	}
 	
+	//if we're drawing a pixel, fill the box from the topleft most corner
+	//with a square the gridsize in side length
 	private void doDot(int x, int y, Graphics tg) {
-		tg.fillRect(x, y, pixelSize, pixelSize);
+		tg.fillRect(x, y, gridSize, gridSize);
 	}
 
+	//if we're doing a fill, prepare for a recursive fill
 	private void doFill(int x, int y, Graphics tg) {
+		//save the color in the grid box we're gonna overwrite
 		Color targetColor = new Color(image.getRGB(x, y));
+		
+		//the grapics object is already set the color we're gonna fill with,
+		//now call a recursive fill at that starting coordinate
 		floodFillRecursive(x, y, tg, targetColor);
 	}
 	
+	/*
+	 * a recursive fill works by this algorithm:
+	 * 
+	 * -If the color we're gonna overwrite is the same
+	 * 		as the color we're using, stop
+	 * 
+	 * -If we're beyond the image boundaries, stop
+	 * 
+	 * -If the color at the pixel we're looking at is not
+	 * 		the color we're trying to overwrite, stop
+	 * 
+	 * -Now set the color at the pixel we're looking at to
+	 * 		the color we want.
+	 * 
+	 * -Now look up, down, left, and right, and call a recursive fill on those
+	 */
 	private void floodFillRecursive(int x, int y, Graphics tg, Color target)
 	{
+
+		if(target.equals(tg.getColor()))
+			return;
+		
 		if(x < 0 || x > imageSide-1)
 			return;
 		if(y < 0 || y > imageSide-1)
 			return;
-		if(target.equals(tg.getColor()))
-			return;
+		
 		if(!new Color(image.getRGB(x, y)).equals(target))
 			return;
-		tg.fillRect(x, y, pixelSize, pixelSize);
-		floodFillRecursive(x-pixelSize, y, tg, target);
-		floodFillRecursive(x+pixelSize, y, tg, target);
-		floodFillRecursive(x, y-pixelSize, tg, target);
-		floodFillRecursive(x, y+pixelSize, tg, target);
+		
+		tg.fillRect(x, y, gridSize, gridSize);
+		
+		floodFillRecursive(x-gridSize, y, tg, target);
+		floodFillRecursive(x+gridSize, y, tg, target);
+		floodFillRecursive(x, y-gridSize, tg, target);
+		floodFillRecursive(x, y+gridSize, tg, target);
 	}
 
+	//clears the canvas to all white
 	public void clearCanvas()
 	{
 		Graphics g = image.getGraphics();
@@ -101,41 +144,45 @@ public class EditorPanel extends JPanel {
 		repaint();
 	}
 	
-	public boolean saveImage(File f)
+	//saves the image to the given file in PNG form
+	public void saveImage(File f) throws IOException
 	{
-		try
-		{
-			ImageIO.write(image, "PNG", f);
-			return true;
-		} catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-		return false;
+		ImageIO.write(image, "PNG", f);
 	}
 
+	/*
+	 * The paint function for this object
+	 * Specialized to draw a grid over the image if
+	 * that is selected
+	 */
 	@Override
 	public void paintComponent(Graphics g)
 	{
+		//aways call the superclass's method
 		super.paintComponent(g);
 		
+		//draw the buffered image
 		g.drawImage(image, 0, 0, this);
 		
+		//this is my grid color, RGBA(50, 50, 150, 30)
 		g.setColor(new Color(50, 50, 150, 30));
 		
+		//if we want to show the grid, it's faster to draw
+		//all the vertical lines and then all the horizontal lines
 		if(mShowGrid)
 		{
-			for(int x = 0; x < imageSide; x+=pixelSize)
+			for(int x = 0; x < imageSide; x+=gridSize)
 			{
 				g.drawLine(x, 0, x, imageSide);
 			}
 			
-			for(int y = 0; y < imageSide; y+=pixelSize) {
+			for(int y = 0; y < imageSide; y+=gridSize) {
 				g.drawLine(0, y, imageSide, y);
 			}
 		}
 	}
 
+	//setters to set the grid and fill options
 	public void showGrid(boolean selected) {
 		mShowGrid = selected;
 		repaint();
