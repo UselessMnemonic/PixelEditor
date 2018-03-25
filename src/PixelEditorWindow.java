@@ -1,5 +1,6 @@
 import java.awt.EventQueue;
 import java.awt.Robot;
+import java.awt.Toolkit;
 
 import javax.swing.JFrame;
 
@@ -306,7 +307,7 @@ public class PixelEditorWindow {
 		mPixelEditorFrame.getContentPane().add(chckbxFill);
 		
 		JButton mEyedropperButton = new JButton("");
-		mEyedropperButton.setIcon(new ImageIcon("C:\\Users\\chris\\eclipse-workspace\\PixelEditor\\eyedropper.png"));
+		mEyedropperButton.setIcon(new ImageIcon(Toolkit.getDefaultToolkit().getImage("eyedropper.png")));
 		mEyedropperButton.setBounds(391, 156, 24, 22);
 		mPixelEditorFrame.getContentPane().add(mEyedropperButton);
 		
