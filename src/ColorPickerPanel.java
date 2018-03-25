@@ -113,11 +113,13 @@ public class ColorPickerPanel extends JPanel {
 		//the way I draw the crosshair is, I take the opposite brightness, hue, and saturation, and use that color
 		g.setColor(Color.getHSBColor(1.0f-mHSBCoordinates[0], 1.0f-mHSBCoordinates[1], 1.0f-b));
 		
-		//and I draw a 3-wide line west, east, south, and west of the pixel
-		g.drawLine(mXCoord-3, mYCoord, mXCoord-1, mYCoord);
-		g.drawLine(mXCoord+3, mYCoord, mXCoord+1, mYCoord);
-		g.drawLine(mXCoord, mYCoord+3, mXCoord, mYCoord+1);
-		g.drawLine(mXCoord, mYCoord-1, mXCoord, mYCoord-3);
+		//and I draw a line west, east, south, and west of the pixel, and a box
+		g.drawRect(mXCoord-1, mYCoord-1, 2, 2);
+		
+		g.drawLine(0, mYCoord, mXCoord-1, mYCoord);
+		g.drawLine(mXCoord+1, mYCoord, 360, mYCoord);
+		g.drawLine(mXCoord, 100, mXCoord, mYCoord+1);
+		g.drawLine(mXCoord, mYCoord-1, mXCoord, 0);
 	}
 	
 }
