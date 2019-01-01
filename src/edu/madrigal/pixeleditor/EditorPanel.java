@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -12,6 +13,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.Stack;
 
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
@@ -177,7 +179,7 @@ public class EditorPanel extends JPanel
 
 		//if we're in fill mode, do a fill, otherwise draw a pixel
 		if( fill )
-			doFill( xf, yf, tg );
+			flood( xi, yi, tg );
 		else
 			drawDot( xf, yf, tg );
 		
@@ -204,43 +206,36 @@ public class EditorPanel extends JPanel
 	 * @param y The y-coord from which to start filling
 	 * @param tg The graphics object on which to draw
 	 */
-	private void doFill( int x, int y, Graphics tg ) {
+	private void flood( int x, int y, Graphics tg ) {
 	  
 		//save the color in the grid box we're gonna overwrite
-		Color targetColor = new Color( image.getRGB( x, y ) );
+		int target = image.getRGB( x, y );
+		int replacement = tg.getColor().getRGB();
 		
-		//the graphics object is already set the color we're gonna fill with,
-		//now call the fill
-		try {
-	    flood( tg, x, y, targetColor );
-		} catch( IndexOutOfBoundsException ioobe ) {
-		  
-		}
+		Stack< Point > points = new Stack<>();
+    points.push( new Point( x, y ) );
+    
+    while( !points.isEmpty() ) {
+      
+      Point currentPoint = points.pop();
+      int xi = currentPoint.x;
+      int yi = currentPoint.y;
+      
+      if( xi < 0 || yi < 0 || xi >= SIZE || yi >= SIZE ) {
+        continue;
+      }
+      
+      int current = image.getRGB( xi, yi );
+      
+      if( current == target && current != replacement ) {
+        tg.fillRect( xi, yi, 1, 1 );
+        points.push( new Point( xi + 1, yi ) );
+        points.push( new Point( xi - 1, yi ) );
+        points.push( new Point( xi, yi + 1 ) );
+        points.push( new Point( xi, yi - 1 ) );
+      }
+    }
 	}
-
-	/**
-	 * A recursive method for flood-filling as defined by the following algorithm:
-	 * 
-	 * - If the color we're gonna overwrite is the same as the
-	 *   color we're using, stop
-   * 
-   * - If we're beyond the image boundaries, stop
-   * 
-   * - If the color at the pixel we're looking at is not the color we're trying
-   *   to overwrite, stop
-   * 
-   * - Now set the color at the pixel we're looking at to the color we want.
-   * 
-   * - Now look up, down, left, and right, and call a recursive fill on those
-   * 
-   * @param tg The target graphics object
-	 * @param x The X coordinate from which to start
-	 * @param y The Y coordinate from which to start
-	 * @param target the color we're replacing
-	 */
-  private void flood( Graphics tg, int x, int y, Color target ) {
-    //TODO
-  }
 	
   /**
 	 * Clears the canvas to all opaque white.

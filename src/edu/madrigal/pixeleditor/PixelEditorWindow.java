@@ -71,7 +71,7 @@ public class PixelEditorWindow implements WindowListener {
 
   // update codes
   private static final int SRC_HSB = 0;
-  private static final int SRC_RGBA = 1;
+  private static final int SRC_RGB = 1;
   private static final int SRC_PICKER = 2;
   private static final int SRC_HEX = 3;
   private static final int SRC_OTHER = 4;
@@ -180,15 +180,16 @@ public class PixelEditorWindow implements WindowListener {
 
     // a border to be given to the selected color boxes
     LineBorder selectedBorder = new LineBorder( SELECTED_BORDER_COLOR,
-        SELECTED_BORDER_SIZE, false );
+                                                SELECTED_BORDER_SIZE,
+                                                false );
 
     JPanel firstColorDisplay, secondColorDisplay;
 
     /*
-     * These listeners update the rest of the components when the focus color is
+     * These listeners update the rest of the components when the color is
      * changed.
      */
-    ChangeListener rbgaChangeListener = new ChangeListener() {
+    ChangeListener rbgChangeListener = new ChangeListener() {
 
       public void stateChanged( ChangeEvent e ) {
         if( updateInProgress ) {
@@ -197,10 +198,11 @@ public class PixelEditorWindow implements WindowListener {
 
         Color updatedColor = new Color(
             (Integer) redSpinner.getValue(),
-            (Integer) greenSpinner.getValue(), (Integer) blueSpinner.getValue(),
+            (Integer) greenSpinner.getValue(),
+            (Integer) blueSpinner.getValue(),
             (Integer) alphaSpinner.getValue() );
 
-        updateColor( updatedColor, SRC_RGBA );
+        updateColor( updatedColor, SRC_RGB );
       }
     };
 
@@ -218,8 +220,9 @@ public class PixelEditorWindow implements WindowListener {
             (Integer) brightnessSpinner.getValue() / (float) BRIGHT_MAX );
 
         updatedColor = new Color( updatedColor.getRed(),
-            updatedColor.getGreen(), updatedColor.getBlue(),
-            (Integer) alphaSpinner.getValue() );
+                                  updatedColor.getGreen(),
+                                  updatedColor.getBlue(),
+                                  (Integer) alphaSpinner.getValue() );
 
         updateColor( updatedColor, SRC_HSB );
       }
@@ -470,10 +473,10 @@ public class PixelEditorWindow implements WindowListener {
     } );
 
     // listeners
-    redSpinner.addChangeListener( rbgaChangeListener );
-    greenSpinner.addChangeListener( rbgaChangeListener );
-    blueSpinner.addChangeListener( rbgaChangeListener );
-    alphaSpinner.addChangeListener( rbgaChangeListener );
+    redSpinner.addChangeListener( rbgChangeListener );
+    greenSpinner.addChangeListener( rbgChangeListener );
+    blueSpinner.addChangeListener( rbgChangeListener );
+    alphaSpinner.addChangeListener( rbgChangeListener );
 
     hueSpinner.addChangeListener( hsbChangeListener );
     saturationSpinner.addChangeListener( hsbChangeListener );
@@ -534,26 +537,25 @@ public class PixelEditorWindow implements WindowListener {
 
     // these lines give the color picker the update function to update the color
     // based on whatever color has been clicked on
-    colorPickerPanel.addMouseListener( new MouseAdapter() {
-      public void mouseClicked( MouseEvent e ) {
+    MouseAdapter colorPickerMouseListener = new MouseAdapter() {
+      
+      public void mousePressed( MouseEvent e ) {
         colorPickerPanel.updateColor( e );
-        updateColor( colorPickerPanel.getColor(), SRC_PICKER );
+        Color toUpdate = colorPickerPanel.getColor();
+        toUpdate = new Color( toUpdate.getRed(),
+                              toUpdate.getGreen(),
+                              toUpdate.getBlue(),
+                              ( Integer ) alphaSpinner.getValue() );
+        updateColor( toUpdate, SRC_PICKER );
       }
-    } );
-
-    colorPickerPanel.addMouseMotionListener( new MouseMotionListener() {
-
-      @Override
-      public void mouseMoved( MouseEvent evt ) {
-
-      }
-
-      @Override
+      
       public void mouseDragged( MouseEvent e ) {
-        colorPickerPanel.updateColor( e );
-        updateColor( colorPickerPanel.getColor(), SRC_PICKER );
+        mousePressed( e );
       }
-    } );
+    };
+    
+    colorPickerPanel.addMouseListener( colorPickerMouseListener );
+    colorPickerPanel.addMouseMotionListener( colorPickerMouseListener );
     
     // menu setup
     JMenu fileMenu = new JMenu("File");
@@ -762,7 +764,8 @@ public class PixelEditorWindow implements WindowListener {
 
     if( src != SRC_PICKER && src != SRC_HSB ) {
       colorPickerPanel.setColor( color );
-    } else if( src != SRC_PICKER && src == SRC_HSB ) {
+    }
+    else if( src != SRC_PICKER && src == SRC_HSB ) {
       colorPickerPanel
           .setHue( (Integer) hueSpinner.getValue() / (float) HUE_MAX );
 
@@ -774,24 +777,28 @@ public class PixelEditorWindow implements WindowListener {
     }
 
     if( src != SRC_HSB ) {
-      hueSpinner.setValue( (int) ( colorPickerPanel.getHue() * HUE_MAX ) );
+      hueSpinner
+      .setValue( (int) ( colorPickerPanel.getHue() * HUE_MAX ) );
 
       saturationSpinner
-          .setValue( (int) ( colorPickerPanel.getSaturation() * SATUR_MAX ) );
+      .setValue( (int) ( colorPickerPanel.getSaturation() * SATUR_MAX ) );
 
       brightnessSpinner
-          .setValue( (int) ( colorPickerPanel.getBrightness() * BRIGHT_MAX ) );
+      .setValue( (int) ( colorPickerPanel.getBrightness() * BRIGHT_MAX ) );
     }
 
-    if( src != SRC_RGBA ) {
+    if( src != SRC_RGB ) {
       redSpinner.setValue( color.getRed() );
       greenSpinner.setValue( color.getGreen() );
       blueSpinner.setValue( color.getBlue() );
     }
-
+    
+    alphaSpinner.setValue( color.getAlpha() );
     selectedColorDisplay.setBackground( color );
-    hexCodeField.setText( String.format( "#%02x%02x%02x", color.getRed(),
-        color.getGreen(), color.getBlue() ) );
+    hexCodeField.setText( String.format( "#%02x%02x%02x",
+                          color.getRed(),
+                          color.getGreen(),
+                          color.getBlue() ) );
     hexCodeField.setForeground( color );
     editorPanel.setColor( color );
 
@@ -801,8 +808,6 @@ public class PixelEditorWindow implements WindowListener {
   private void setColorDisplay( JPanel selection ) {
     selectedColorDisplay = selection;
     Color currColor = selection.getBackground();
-    colorPickerPanel.setColor( currColor );
-    alphaSpinner.setValue( currColor.getAlpha() );
     updateColor( currColor, SRC_OTHER );
   }
 
